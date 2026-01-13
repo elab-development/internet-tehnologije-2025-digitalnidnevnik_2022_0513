@@ -11,9 +11,9 @@ export async function GET() {
 
     return NextResponse.json(classrooms);
   } catch (error) {
-    console.error("GET /api/classrooms error:", error);
+    //console.error("GET /api/classrooms error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch classrooms" },
+      { error: `Failed to fetch classrooms: ${error}` },
       { status: 500 }
     );
   }

@@ -18,20 +18,79 @@ enum Role {
 model Classroom {
   id    Int    @id @default(autoincrement())
   name  String @unique
-  users User[]
 
+  students User[] @relation("StudentClassroom")
+
+  homeroomTeacherId Int?
+  homeroomTeacher   User? @relation("HomeroomTeacher", fields: [homeroomTeacherId], references: [id])
+
+  teachingAssignments TeacherSubjectClassroom[]
+
+  grades Grade[]
+
+  @@unique([homeroomTeacherId])
   @@map("classrooms")
 }
 
 model User {
-  id          Int @id @default(autoincrement())
-  username    String @unique
+  id          Int       @id @default(autoincrement())
+  username    String    @unique
   full_name   String?
   password    String
   role        Role
+
   classroomId Int?
-  classroom   Classroom? @relation(fields: [classroomId], references: [id])
+  classroom   Classroom? @relation("StudentClassroom", fields: [classroomId], references: [id])
+
+  teachingAssignments TeacherSubjectClassroom[]
+  homeroomOf Classroom[] @relation("HomeroomTeacher")
+
+  gradesReceived Grade[] @relation("StudentGrades")
+  gradesGiven    Grade[] @relation("TeacherGrades")
 
   @@map("users")
+}
 
+model Subject {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+
+  teachingAssignments TeacherSubjectClassroom[]
+
+  grades Grade[]
+
+  @@map("subjects")
+}
+
+model TeacherSubjectClassroom {
+  id          Int         @id @default(autoincrement())
+
+  teacherId   Int
+  subjectId   Int
+  classroomId Int
+
+  teacher     User        @relation(fields: [teacherId], references: [id])
+  subject     Subject     @relation(fields: [subjectId], references: [id])
+  classroom   Classroom   @relation(fields: [classroomId], references: [id])
+
+  @@map("teacher_subject_classroom")
+}
+
+model Grade {
+  id          Int      @id @default(autoincrement())
+  value       Int
+  comment     String?
+  date        DateTime @default(now())
+
+  studentId   Int
+  teacherId   Int
+  subjectId   Int
+  classroomId Int
+
+  student     User      @relation("StudentGrades", fields: [studentId], references: [id])
+  teacher     User      @relation("TeacherGrades", fields: [teacherId], references: [id])
+  subject     Subject   @relation(fields: [subjectId], references: [id])
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+
+  @@map("grades")
 }
