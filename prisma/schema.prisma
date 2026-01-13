@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// enumi
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+// modeli/entiteti
+model Classroom {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+
+  @@map("classrooms")
+}
+
+model User {
+  id          Int @id @default(autoincrement())
+  username    String @unique
+  full_name   String?
+  password    String
+  role        Role
+  classroomId Int?
+  classroom   Classroom? @relation(fields: [classroomId], references: [id])
+
+  @@map("users")
+
+}
