@@ -3,39 +3,18 @@
 BEGIN;
 
 -- clean db
-TRUNCATE TABLE
-  teacher_subject_classroom,
-  subjects,
-  classrooms,
-  users
-RESTART IDENTITY CASCADE;
+TRUNCATE TABLE grades RESTART IDENTITY CASCADE;
+TRUNCATE TABLE teacher_subject_classroom RESTART IDENTITY CASCADE;
+TRUNCATE TABLE subjects RESTART IDENTITY CASCADE;
+TRUNCATE TABLE users RESTART IDENTITY CASCADE;
+TRUNCATE TABLE classrooms RESTART IDENTITY CASCADE;
 
--- users (bez classroomId)
-INSERT INTO users (id, username, full_name, password, role, "classroomId") VALUES
----- admin
-(1, 'admin', 'Administrator Sistema', 'admin123', 'ADMIN', NULL),
-
----- nastavnici
-(2, 'milica', 'Milica Matematika', 'teacher123', 'TEACHER', NULL),
-(3, 'ana', 'Ana Srpski', 'teacher123', 'TEACHER', NULL),
-(4, 'petar', 'Petar Informatika', 'teacher123', 'TEACHER', NULL),
-
--- studenti (classroomId je NULL)
-(5, 'marko', 'Marko Markovic', 'student123', 'STUDENT', NULL),
-(6, 'jelena', 'Jelena Jovanovic', 'student123', 'STUDENT', NULL),
-(7, 'ivan', 'Ivan Ilic', 'student123', 'STUDENT', NULL),
-(8, 'sara', 'Sara Savic', 'student123', 'STUDENT', NULL);
-
--- classrooms (kada nastavnici postoje)
-INSERT INTO classrooms (id, name, "homeroomTeacherId") VALUES
-(1, 'V-1', 2),
-(2, 'V-2', 3),
-(3, 'V-3', 4);
-
--- dodeli studente u classrooms
-UPDATE users SET "classroomId" = 1 WHERE id IN (5, 6);
-UPDATE users SET "classroomId" = 2 WHERE id = 7;
-UPDATE users SET "classroomId" = 3 WHERE id = 8;
+-- classrooms
+INSERT INTO classrooms (id, name)
+VALUES
+(1, 'V-1'),
+(2, 'V-2'),
+(3, 'V-3');
 
 -- subjects
 INSERT INTO subjects (id, name) VALUES
@@ -43,16 +22,97 @@ INSERT INTO subjects (id, name) VALUES
 (2, 'Srpski jezik'),
 (3, 'Informatika');
 
+-- users - password za sve: password123
+INSERT INTO users (username, full_name, password, role, "classroomId")
+VALUES
+
+--- admin
+('admin',
+ 'Administrator',
+ '$2b$10$B3ZRLIje31uwagP2g5t5Xuk71BqNgfgsMue85vXNsy./U.vN.pe6S',
+ 'ADMIN',
+ NULL),
+
+--- nastavnici
+('milica',
+ 'Milica Matematika',
+ '$2b$10$B3ZRLIje31uwagP2g5t5Xuk71BqNgfgsMue85vXNsy./U.vN.pe6S',
+ 'TEACHER',
+ NULL),
+
+('ana',
+ 'Ana Srpski',
+ '$2b$10$B3ZRLIje31uwagP2g5t5Xuk71BqNgfgsMue85vXNsy./U.vN.pe6S',
+ 'TEACHER',
+ NULL),
+
+('petar',
+ 'Petar Informatika',
+ '$2b$10$B3ZRLIje31uwagP2g5t5Xuk71BqNgfgsMue85vXNsy./U.vN.pe6S',
+ 'TEACHER',
+ NULL),
+
+--- student V-1
+('marko',
+ 'Marko Markovic',
+ '$2b$10$B3ZRLIje31uwagP2g5t5Xuk71BqNgfgsMue85vXNsy./U.vN.pe6S',
+ 'STUDENT',
+ 1),
+
+('jelena',
+ 'Jelena Jovanovic',
+ '$2b$10$B3ZRLIje31uwagP2g5t5Xuk71BqNgfgsMue85vXNsy./U.vN.pe6S',
+ 'STUDENT',
+ 1),
+
+--- student V-2
+('ivan',
+ 'Ivan Ilic',
+ '$2b$10$B3ZRLIje31uwagP2g5t5Xuk71BqNgfgsMue85vXNsy./U.vN.pe6S',
+ 'STUDENT',
+ 2),
+--- student V-3
+('sara',
+ 'Sara Savic',
+ '$2b$10$B3ZRLIje31uwagP2g5t5Xuk71BqNgfgsMue85vXNsy./U.vN.pe6S',
+ 'STUDENT',
+ 3);
+
+--- razredne staresine
+UPDATE classrooms
+SET "homeroomTeacherId" = (
+  SELECT id FROM users WHERE username = 'milica'
+)
+WHERE name = 'V-1';
+
+UPDATE classrooms
+SET "homeroomTeacherId" = (
+  SELECT id FROM users WHERE username = 'ana'
+)
+WHERE name = 'V-2';
+
+UPDATE classrooms
+SET "homeroomTeacherId" = (
+  SELECT id FROM users WHERE username = 'petar'
+)
+WHERE name = 'V-3';
+
+
+
 -- teacher_subject_classroom
-INSERT INTO teacher_subject_classroom ("teacherId", "subjectId", "classroomId") VALUES
+INSERT INTO teacher_subject_classroom ("teacherId", "subjectId", "classroomId")
+VALUES
+-- milica – Matematika
 (2, 1, 1),
 (2, 1, 2),
 (2, 1, 3),
 
+-- ana – Srpski
 (3, 2, 1),
 (3, 2, 2),
 (3, 2, 3),
 
+-- petar – Informatika
 (4, 3, 1),
 (4, 3, 2),
 (4, 3, 3);
@@ -65,10 +125,7 @@ VALUES
 --- ucenici V-1 (Marko, Jelena) – Matematika
 (5, 'Odlicno znanje', NOW(), 5, 2, 1, 1),
 (4, 'Dobar rad na casu', NOW(), 6, 2, 1, 1),
-
---- ucenici V-1 – Srpski jezik
-(4, 'Lep sastav', NOW(), 5, 3, 2, 1),
-(3, 'Treba vise vezbe', NOW(), 6, 3, 2, 1),
+(3, 'Lep sastav', NOW(), 5, 3, 2, 1),
 
 --- ucenik V-2 (Ivan) – Matematika i Informatika
 (5, 'Izuzetan uspeh', NOW(), 7, 2, 1, 2),

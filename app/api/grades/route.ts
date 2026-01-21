@@ -1,90 +1,97 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth/requireAuth";
 
-// get
+/**
+ * GET /api/grades
+ *
+ * vraca listu ocena filtriranu po ulozi
+ *  - ADMIN   vidi sve ocene
+ *  - TEACHER vidi samo ocene koje je on dodelio
+ *  - STUDENT vidi samo svoje ocene
+ */
 export async function GET(req: Request) {
+  let user;
   try {
-    const { searchParams } = new URL(req.url);
+    user = requireAuth(req);
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const role = searchParams.get("role");
-    const userId = searchParams.get("userId");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const whereClause: any = {};
 
-    if (!role) {
-      return NextResponse.json({ error: "Role is required" }, { status: 400 });
-    }
+  if (user.role === "TEACHER") {
+    whereClause.teacherId = user.id;
+  }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const whereClause: any = {};
+  if (user.role === "STUDENT") {
+    whereClause.studentId = user.id;
+  }
 
-    if (role === "TEACHER") {
-      if (!userId) {
-        return NextResponse.json(
-          { error: "userId is required for TEACHER" },
-          { status: 400 }
-        );
-      }
-      whereClause.teacherId = Number(userId);
-    }
-
-    if (role === "STUDENT") {
-      if (!userId) {
-        return NextResponse.json(
-          { error: "userId is required for STUDENT" },
-          { status: 400 }
-        );
-      }
-      whereClause.studentId = Number(userId);
-    }
-
-    // ADMIN - nema filtera
-
+  try {
+    // uzimamo ocene zajedno sa ucenikom, nastavnikom, predmetom i odeljenjem
     const grades = await prisma.grade.findMany({
       where: whereClause,
       include: {
         student: {
-          select: { id: true, full_name: true },
+          select: {
+            id: true,
+            full_name: true,
+          },
         },
         teacher: {
-          select: { id: true, full_name: true },
+          select: {
+            id: true,
+            full_name: true,
+          },
         },
         subject: true,
         classroom: true,
       },
-      orderBy: { date: "desc" },
+      orderBy: {
+        date: "desc",
+      },
     });
 
     return NextResponse.json(grades);
   } catch (error) {
     return NextResponse.json(
-      { error: `Failed to fetch grades: ${error}` },
+      { error: `Neuspešno učitavanje ocena: ${error}` },
       { status: 500 }
     );
   }
 }
 
-// post
+/**
+ * POST /api/grades
+ *
+ * kreira novu ocenu
+ *  - ADMIN   i   TEACHER mogu da dodaju ocene
+ *  - STUDENT nema pravo upisa
+ *
+ * teacherId se ne salje iz frontenda vec se uvek uzima iz JWT tokena
+ * (ulogovani nastavnik / administrator)
+ */
 export async function POST(req: Request) {
+  let user;
   try {
-    const { searchParams } = new URL(req.url);
+    user = requireAuth(req);
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    const role = searchParams.get("role");
-    const userId = searchParams.get("userId");
+  if (user.role === "STUDENT") {
+    return NextResponse.json(
+      { error: "Učenicima nije dozvoljeno da dodaju ocene" },
+      { status: 403 }
+    );
+  }
 
-    if (!role) {
-      return NextResponse.json({ error: "Role is required" }, { status: 400 });
-    }
-
-    // student ne sme da doda ocenu
-    if (role === "STUDENT") {
-      return NextResponse.json(
-        { error: "Students are not allowed to add grades" },
-        { status: 403 }
-      );
-    }
-
+  try {
+    // citamo JSON telo zahteva (ocena + ID-jevi vezanih entiteta)
     const body = await req.json();
-    const { value, comment, studentId, teacherId, subjectId, classroomId } =
-      body;
+    const { value, comment, studentId, subjectId, classroomId } = body;
 
     // osnovna validacija
     if (
@@ -92,23 +99,17 @@ export async function POST(req: Request) {
       value < 1 ||
       value > 5 ||
       !studentId ||
-      !teacherId ||
       !subjectId ||
       !classroomId
     ) {
       return NextResponse.json(
-        { error: "Invalid grade data" },
+        { error: "Neispravni podaci za ocenu" },
         { status: 400 }
       );
     }
 
-    // nastavnik sme sme da unosi samo svoje ocene
-    if (role === "TEACHER" && Number(userId) !== teacherId) {
-      return NextResponse.json(
-        { error: "Teacher can only assign their own grades" },
-        { status: 403 }
-      );
-    }
+    // nastavnik (ili admin) unosi ocenu; teacherId uzimamo iz tokena
+    const teacherId = user.id;
 
     const grade = await prisma.grade.create({
       data: {
@@ -124,7 +125,7 @@ export async function POST(req: Request) {
     return NextResponse.json(grade, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { error: `Failed to create grade: ${error}` },
+      { error: `Neuspešno kreiranje ocene: ${error}` },
       { status: 500 }
     );
   }

@@ -13,7 +13,7 @@ export async function GET() {
   } catch (error) {
     //console.error("GET /api/classrooms error:", error);
     return NextResponse.json(
-      { error: `Failed to fetch classrooms: ${error}` },
+      { error: `Neuspešno učitavanje odeljenja: ${error}` },
       { status: 500 }
     );
   }
