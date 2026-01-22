@@ -26,7 +26,8 @@ model Classroom {
 
   teachingAssignments TeacherSubjectClassroom[]
 
-  grades Grade[]
+  grades      Grade[]
+  assignments Assignment[]
 
   @@unique([homeroomTeacherId])
   @@map("classrooms")
@@ -43,35 +44,37 @@ model User {
   classroom   Classroom? @relation("StudentClassroom", fields: [classroomId], references: [id])
 
   teachingAssignments TeacherSubjectClassroom[]
-  homeroomOf Classroom[] @relation("HomeroomTeacher")
+  homeroomOf          Classroom[] @relation("HomeroomTeacher")
 
-  gradesReceived Grade[] @relation("StudentGrades")
-  gradesGiven    Grade[] @relation("TeacherGrades")
+  gradesReceived Grade[]      @relation("StudentGrades")
+  gradesGiven    Grade[]      @relation("TeacherGrades")
+  assignments    Assignment[] @relation("TeacherAssignments")
 
   @@map("users")
 }
 
 model Subject {
-  id    Int     @id @default(autoincrement())
-  name  String  @unique
+  id    Int    @id @default(autoincrement())
+  name  String @unique
 
   teachingAssignments TeacherSubjectClassroom[]
 
-  grades Grade[]
+  grades      Grade[]
+  assignments Assignment[]
 
   @@map("subjects")
 }
 
 model TeacherSubjectClassroom {
-  id          Int         @id @default(autoincrement())
+  id          Int @id @default(autoincrement())
 
   teacherId   Int
   subjectId   Int
   classroomId Int
 
-  teacher     User        @relation(fields: [teacherId], references: [id])
-  subject     Subject     @relation(fields: [subjectId], references: [id])
-  classroom   Classroom   @relation(fields: [classroomId], references: [id])
+  teacher   User      @relation(fields: [teacherId], references: [id])
+  subject   Subject   @relation(fields: [subjectId], references: [id])
+  classroom Classroom @relation(fields: [classroomId], references: [id])
 
   @@map("teacher_subject_classroom")
 }
@@ -87,10 +90,27 @@ model Grade {
   subjectId   Int
   classroomId Int
 
-  student     User      @relation("StudentGrades", fields: [studentId], references: [id])
-  teacher     User      @relation("TeacherGrades", fields: [teacherId], references: [id])
-  subject     Subject   @relation(fields: [subjectId], references: [id])
-  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  student   User      @relation("StudentGrades", fields: [studentId], references: [id])
+  teacher   User      @relation("TeacherGrades", fields: [teacherId], references: [id])
+  subject   Subject   @relation(fields: [subjectId], references: [id])
+  classroom Classroom @relation(fields: [classroomId], references: [id])
 
   @@map("grades")
+}
+
+model Assignment {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  dueDate     DateTime
+
+  teacherId   Int
+  subjectId   Int
+  classroomId Int
+
+  teacher   User      @relation("TeacherAssignments", fields: [teacherId], references: [id])
+  subject   Subject   @relation(fields: [subjectId], references: [id])
+  classroom Classroom @relation(fields: [classroomId], references: [id])
+
+  @@map("assignments")
 }
