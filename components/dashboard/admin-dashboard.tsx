@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
 const AdminDashboard = () => {
   return (
     <div className="space-y-4">
@@ -9,6 +12,15 @@ const AdminDashboard = () => {
         <li>Dodela nastavnika i predmeta</li>
         <li>Pregled celog sistema</li>
       </ul>
+
+      <div className="pt-2 flex flex-wrap gap-2">
+        <Button asChild variant="outline">
+          <Link href="/admin/users">Korisnici</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/admin/classrooms">Odeljenja</Link>
+        </Button>
+      </div>
     </div>
   );
 };
