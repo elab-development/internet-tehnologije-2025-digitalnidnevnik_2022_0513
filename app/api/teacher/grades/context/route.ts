@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   if (user.role !== "TEACHER" && user.role !== "ADMIN") {
     return NextResponse.json(
       { error: "Samo nastavnici mogu da pristupe ovim podacima" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -50,10 +50,18 @@ export async function GET(req: Request) {
           },
         },
         include: {
+          homeroomTeacher: {
+            select: {
+              id: true,
+              full_name: true,
+              username: true,
+            },
+          },
           students: {
             select: {
               id: true,
               full_name: true,
+              username: true,
             },
             orderBy: {
               full_name: "asc",
@@ -70,7 +78,7 @@ export async function GET(req: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: `Neuspešno učitavanje konteksta za ocene: ${error}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

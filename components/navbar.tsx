@@ -89,6 +89,7 @@ const Navbar = () => {
           <>
             <Link href="/dashboard">Panel</Link>
             <Link href="/grades">Moje ocene</Link>
+            <Link href="/classrooms">Moje odeljenje</Link>
           </>
         )}
 
