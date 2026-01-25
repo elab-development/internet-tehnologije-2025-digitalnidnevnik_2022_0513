@@ -97,3 +97,50 @@ export async function PATCH(
     );
   }
 }
+
+/**
+ * DELETE /api/admin/users/[id]
+ *
+ * brise korisnika po ID-u (admin funkcionalnost)
+ */
+export async function DELETE(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  let user;
+  try {
+    user = requireAuth(req);
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (user.role !== "ADMIN") {
+    return NextResponse.json(
+      { error: "Samo administratori mogu da brišu korisnike" },
+      { status: 403 }
+    );
+  }
+
+  const { id } = await context.params;
+  const userId = Number(id);
+  if (Number.isNaN(userId)) {
+    return NextResponse.json(
+      { error: `Neispravan ID korisnika: '${id}'` },
+      { status: 400 }
+    );
+  }
+
+  try {
+    await prisma.user.delete({ where: { id: userId } });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    // ako postoje povezane ocene/zadaci itd, baza moze da odbije brisanje
+    return NextResponse.json(
+      {
+        error:
+          "Brisanje korisnika nije uspelo. Proverite da li korisnik ima povezane podatke (ocene, zadatke, odeljenja).",
+      },
+      { status: 400 }
+    );
+  }
+}
