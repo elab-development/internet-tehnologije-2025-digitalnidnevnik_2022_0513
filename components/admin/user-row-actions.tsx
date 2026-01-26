@@ -45,6 +45,7 @@ const UsersRowActions = ({
   );
   const [classrooms, setClassrooms] = useState<ClassroomOption[]>([]);
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // kada se dialog otvori ucitavamo listu odeljenja za select.
   useEffect(() => {
@@ -132,6 +133,37 @@ const UsersRowActions = ({
     setClassroomId(user.classroomId ?? null);
   };
 
+  const deleteUser = async () => {
+    // jednostavna potvrda brisanja
+    if (!window.confirm(`Da li ste sigurni da želite da obrišete korisnika '${user.username}'?`)) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/admin/users/${user.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error || "Greška pri brisanju korisnika");
+        return;
+      }
+
+      toast.success("Korisnik je obrisan");
+      await reloadUsers();
+    } catch {
+      toast.error("Greška pri brisanju korisnika");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -142,10 +174,18 @@ const UsersRowActions = ({
         setOpen(isOpen);
       }}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="mr-2">
           Uredi
         </Button>
       </DialogTrigger>
+      <Button
+        variant="destructive"
+        size="sm"
+        type="button"
+        onClick={deleteUser}
+        disabled={deleting}>
+        {deleting ? "Brisanje..." : "Obriši"}
+      </Button>
 
       <DialogContent>
         <DialogHeader>

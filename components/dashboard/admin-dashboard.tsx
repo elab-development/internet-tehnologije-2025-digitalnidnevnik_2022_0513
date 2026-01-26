@@ -20,6 +20,12 @@ const AdminDashboard = () => {
         <Button asChild variant="outline">
           <Link href="/admin/classrooms">Odeljenja</Link>
         </Button>
+        <Button asChild variant="outline">
+          <Link href="/admin/subjects">Predmeti</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/admin/teacher-subjects">Dodela predmeta nastavnicima</Link>
+        </Button>
       </div>
     </div>
   );
