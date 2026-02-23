@@ -19,7 +19,7 @@ export async function GET(req: Request) {
   if (user.role !== "ADMIN") {
     return NextResponse.json(
       { error: "Samo administratori mogu da pristupe korisnicima" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: `Neuspešno učitavanje korisnika: ${error}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
   if (user.role !== "ADMIN") {
     return NextResponse.json(
       { error: "Samo administratori mogu da kreiraju korisnike" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -86,15 +86,12 @@ export async function POST(req: Request) {
     if (!username || !password || !role) {
       return NextResponse.json(
         { error: "username, password i role su obavezni" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!["ADMIN", "TEACHER", "STUDENT"].includes(role)) {
-      return NextResponse.json(
-        { error: "Neispravna uloga" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Neispravna uloga" }, { status: 400 });
     }
 
     // koristimo istu logiku hesiranja lozinke kao i kod /api/auth/register
@@ -119,20 +116,21 @@ export async function POST(req: Request) {
         classroom: null,
         classroomId: created.classroomId,
       },
-      { status: 201 }
+      { status: 201 },
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     // P2002 = unique constraint (npr. username vec postoji)
-    if (error?.code === "P2002") {
+    const prismaError = error as { code?: string };
+    if (prismaError?.code === "P2002") {
       return NextResponse.json(
         { error: "Korisničko ime je već zauzeto" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { error: `Neuspešno kreiranje korisnika: ${error}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

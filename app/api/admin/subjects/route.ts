@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(subject, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
       { error: `Neuspešno kreiranje predmeta: ${error}` },
       { status: 500 },
@@ -127,7 +127,7 @@ export async function DELETE(req: Request) {
   try {
     await prisma.subject.delete({ where: { id: subjectId } });
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
       {
         error:

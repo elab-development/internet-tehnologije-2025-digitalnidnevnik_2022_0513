@@ -77,7 +77,12 @@ const AdminTeacherSubjectsPage = () => {
             }),
           ]);
 
-        if (!teachersRes.ok || !subjectsRes.ok || !classroomsRes.ok || !linksRes.ok) {
+        if (
+          !teachersRes.ok ||
+          !subjectsRes.ok ||
+          !classroomsRes.ok ||
+          !linksRes.ok
+        ) {
           throw new Error();
         }
 
@@ -88,7 +93,12 @@ const AdminTeacherSubjectsPage = () => {
 
         setTeachers(teachersJson);
         setSubjects(subjectsJson);
-        setClassrooms(classroomsJson.map((c: any) => ({ id: c.id, name: c.name })));
+        setClassrooms(
+          classroomsJson.map((c: { id: number; name: string }) => ({
+            id: c.id,
+            name: c.name,
+          })),
+        );
         setLinks(linksJson);
       } catch {
         toast.error("Greška pri učitavanju podataka za dodelu predmeta");
@@ -140,7 +150,9 @@ const AdminTeacherSubjectsPage = () => {
   };
 
   const deleteLink = async (id: number) => {
-    if (!window.confirm("Da li ste sigurni da želite da obrišete ovu dodelu?")) {
+    if (
+      !window.confirm("Da li ste sigurni da želite da obrišete ovu dodelu?")
+    ) {
       return;
     }
 
@@ -182,8 +194,9 @@ const AdminTeacherSubjectsPage = () => {
             <select
               className="w-full border rounded px-2 py-1 text-sm"
               value={teacherId}
-              onChange={(e) => setTeacherId(e.target.value ? Number(e.target.value) : "")}
-            >
+              onChange={(e) =>
+                setTeacherId(e.target.value ? Number(e.target.value) : "")
+              }>
               <option value="">Izaberite nastavnika</option>
               {teachers.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -198,8 +211,9 @@ const AdminTeacherSubjectsPage = () => {
             <select
               className="w-full border rounded px-2 py-1 text-sm"
               value={subjectId}
-              onChange={(e) => setSubjectId(e.target.value ? Number(e.target.value) : "")}
-            >
+              onChange={(e) =>
+                setSubjectId(e.target.value ? Number(e.target.value) : "")
+              }>
               <option value="">Izaberite predmet</option>
               {subjects.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -214,8 +228,9 @@ const AdminTeacherSubjectsPage = () => {
             <select
               className="w-full border rounded px-2 py-1 text-sm"
               value={classroomId}
-              onChange={(e) => setClassroomId(e.target.value ? Number(e.target.value) : "")}
-            >
+              onChange={(e) =>
+                setClassroomId(e.target.value ? Number(e.target.value) : "")
+              }>
               <option value="">Izaberite odeljenje</option>
               {classrooms.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -251,8 +266,7 @@ const AdminTeacherSubjectsPage = () => {
                   type="button"
                   variant="destructive"
                   size="sm"
-                  onClick={() => deleteLink(l.id)}
-                >
+                  onClick={() => deleteLink(l.id)}>
                   Obriši
                 </Button>
               </td>

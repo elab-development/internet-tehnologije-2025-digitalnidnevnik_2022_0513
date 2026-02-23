@@ -11,7 +11,7 @@ import { requireAuth } from "@/lib/auth/requireAuth";
  */
 export async function PATCH(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   let user;
   try {
@@ -23,7 +23,7 @@ export async function PATCH(
   if (user.role !== "ADMIN") {
     return NextResponse.json(
       { error: "Samo administratori mogu da menjaju korisnike" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -44,7 +44,7 @@ export async function PATCH(
   if (Number.isNaN(userId)) {
     return NextResponse.json(
       { error: `Neispravan ID korisnika: '${rawId}'` },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -63,7 +63,7 @@ export async function PATCH(
       if (!["ADMIN", "TEACHER", "STUDENT"].includes(role)) {
         return NextResponse.json(
           { error: "Neispravna uloga" },
-          { status: 400 }
+          { status: 400 },
         );
       }
       data.role = role;
@@ -80,7 +80,7 @@ export async function PATCH(
     if (Object.keys(data).length === 0) {
       return NextResponse.json(
         { error: "Nema promena za korisnika" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -93,7 +93,7 @@ export async function PATCH(
   } catch (error) {
     return NextResponse.json(
       { error: `Neuspešna izmena korisnika: ${error}` },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -105,7 +105,7 @@ export async function PATCH(
  */
 export async function DELETE(
   req: Request,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   let user;
   try {
@@ -117,7 +117,7 @@ export async function DELETE(
   if (user.role !== "ADMIN") {
     return NextResponse.json(
       { error: "Samo administratori mogu da brišu korisnike" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -126,21 +126,21 @@ export async function DELETE(
   if (Number.isNaN(userId)) {
     return NextResponse.json(
       { error: `Neispravan ID korisnika: '${id}'` },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   try {
     await prisma.user.delete({ where: { id: userId } });
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch {
     // ako postoje povezane ocene/zadaci itd, baza moze da odbije brisanje
     return NextResponse.json(
       {
         error:
           "Brisanje korisnika nije uspelo. Proverite da li korisnik ima povezane podatke (ocene, zadatke, odeljenja).",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }

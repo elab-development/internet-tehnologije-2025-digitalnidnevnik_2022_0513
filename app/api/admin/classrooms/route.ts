@@ -110,10 +110,11 @@ export async function POST(req: Request) {
       classroom = await prisma.classroom.create({
         data: { name: trimmedName },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // ako je sekvenca za ID pokvarena
       // fallback je da sami izracunamo sledeci ID (max(id) + 1)
-      if (error?.code === "P2002") {
+      const prismaError = error as { code?: string };
+      if (prismaError?.code === "P2002") {
         const last = await prisma.classroom.findFirst({
           orderBy: { id: "desc" },
         });
