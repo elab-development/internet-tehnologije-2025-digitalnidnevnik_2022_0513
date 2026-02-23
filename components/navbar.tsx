@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
+import WeatherWidget from "@/components/weather-widget";
 
 type Role = "ADMIN" | "TEACHER" | "STUDENT" | null;
 const Navbar = () => {
@@ -52,9 +53,12 @@ const Navbar = () => {
   return (
     <nav className="flex justify-between items-center px-8 py-4 border-b">
       {/* LEFT */}
-      <Link href="/" className="text-lg font-semibold">
-        eDnevnik | <span className="text-sm text-blue-800">{role}</span>
-      </Link>
+      <div className="flex items-center gap-4">
+        <Link href="/" className="text-lg font-semibold">
+          eDnevnik | <span className="text-sm text-blue-800">{role}</span>
+        </Link>
+        <WeatherWidget />
+      </div>
 
       {/* RIGHT */}
       <div className="flex items-center gap-4">
@@ -92,6 +96,9 @@ const Navbar = () => {
             <Link href="/classrooms">Moje odeljenje</Link>
           </>
         )}
+
+        {/* vidljiv svima ulogovanima */}
+        {role && <Link href="/stats">Statistika</Link>}
 
         {role && (
           <>
