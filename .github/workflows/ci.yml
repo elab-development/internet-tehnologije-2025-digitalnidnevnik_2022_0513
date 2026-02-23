@@ -87,6 +87,9 @@ jobs:
       - name: Instalacija dependencija
         run: npm ci
 
+      - name: Generisanje Prisma klijenta
+        run: npx prisma generate
+
       - name: Pokretanje testova
         run: npm run test:run
 
@@ -115,6 +118,9 @@ jobs:
 
       - name: Instalacija dependencija
         run: npm ci
+
+      - name: Generisanje Prisma klijenta
+        run: npx prisma generate
 
       - name: Build Next.js aplikacije
         run: npm run build
